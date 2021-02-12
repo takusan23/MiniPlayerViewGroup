@@ -1,0 +1,3 @@
+include ':miniplayerviewgroup'
+include ':app'
+rootProject.name = "MiniPlayerViewGroup"
