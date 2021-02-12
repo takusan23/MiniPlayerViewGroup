@@ -3,6 +3,8 @@ package io.github.takusan23.miniplayerviewgroup
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.VelocityTracker
@@ -80,13 +82,13 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
         private set
 
     /** 勢いよくスワイプしたときにミニプレイヤー、通常画面に切り替えられるんだけど、それのしきい値 */
-    val flickSpeed = 5000
+    private val flickSpeed = 5000
 
     /**
      * [toDefaultPlayer]、[toMiniPlayer]、[toDestroyPlayer]で実行されるアニメーションの
      * 実行時間
      * */
-    val durationMs = 500L
+    var durationMs = 500L
 
     /**
      * いまフルスクリーンかどうか
@@ -102,12 +104,6 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
     var progress = 0f
         private set
 
-    /**
-     * 終了したときに呼ばれる関数。関数が入ってる配列、なんかおもろい
-     * [isHideable]がtrueじゃないと呼ばれない。あと複数回呼ばれるかも
-     * */
-    private var endListenerList = arrayListOf<(() -> Unit)>()
-
     // 移動速度計測で使う
     private var mVelocityTracker: VelocityTracker? = null
 
@@ -117,8 +113,8 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
     /** 操作中の移動速度 */
     private var slidingSpeed = 0f
 
-    /** 一つ前の状態を持っておく */
-    private var beforeState = -1
+    /** 今の状態 */
+    var currentState = -1
 
 
     /**
@@ -150,7 +146,12 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
         this.playerViewParentViewGroup = playerViewParent
         this.miniPlayerWidth = if (isLandScape()) landscapeMiniPlayerWidth else portlateMiniPlayerWidth
         // 横画面時は上方向のマージンをかける
-        setLandScapeTopMargin(1f)
+        if (isLandScape()) {
+            Handler(Looper.getMainLooper()).post {
+                setLandScapeTopMargin(1f)
+                toPlayerProgress(0f)
+            }
+        }
     }
 
     /**
@@ -343,26 +344,26 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
                 when {
                     isDefaultScreen() -> {
                         // 違ったら入れる
-                        if (beforeState != PLAYER_STATE_DEFAULT) {
+                        if (currentState != PLAYER_STATE_DEFAULT) {
                             stateChangeListenerList.forEach { it.invoke(PLAYER_STATE_DEFAULT) }
-                            beforeState = PLAYER_STATE_DEFAULT
+                            currentState = PLAYER_STATE_DEFAULT
                         }
                     }
                     isMiniPlayer() -> {
                         // 違ったら入れる
-                        if (beforeState != PLAYER_STATE_MINI) {
+                        if (currentState != PLAYER_STATE_MINI) {
                             stateChangeListenerList.forEach { it.invoke(PLAYER_STATE_MINI) }
-                            beforeState = PLAYER_STATE_MINI
+                            currentState = PLAYER_STATE_MINI
                         }
                     }
                     translationY.roundToInt() == parentViewGroupHeight -> {
                         // まだ終了済みではない
                         if (!isAlreadyDestroyed) {
                             // 違ったら入れる
-                            if (beforeState != PLAYER_STATE_DESTROY) {
+                            if (currentState != PLAYER_STATE_DESTROY) {
                                 stateChangeListenerList.forEach { it.invoke(PLAYER_STATE_DESTROY) }
                                 isAlreadyDestroyed = true
-                                beforeState = PLAYER_STATE_DESTROY
+                                currentState = PLAYER_STATE_DESTROY
                             }
                         }
                     }
@@ -382,7 +383,7 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
             playerView!!.updateLayoutParams<LinearLayout.LayoutParams> {
                 // 横画面時はプレイヤーを真ん中にしたい。ので上方向のマージンを設定して真ん中にする
                 // とりあえず最大時にかけるマージン計算
-                val maxTopMargin = (DisplaySizeTool.getDisplayHeight(context) - height) / 2
+                val maxTopMargin = (parentViewGroupHeight - playerView!!.height) / 2
                 // そして現在かけるべきマージンを計算
                 val currentTopMargin = maxTopMargin * progress
                 topMargin = currentTopMargin.roundToInt()

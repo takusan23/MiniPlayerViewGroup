@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import io.github.takusan23.miniplayerviewgroup.MainActivity
+import io.github.takusan23.miniplayerviewgroup.MiniPlayerViewGroup
 import io.github.takusan23.miniplayerviewgroup.databinding.FragmentPlayerBinding
 
 /**
@@ -26,6 +28,29 @@ class PlayerFragment : Fragment() {
         // プレイヤーの設定をする
         initMiniPlayer()
 
+        // コールバック追加
+        addCallBack()
+
+        viewBinding.fragmentPlayerMiniplayerPlayerImageView.setOnClickListener {
+            when (viewBinding.root.currentState) {
+                MiniPlayerViewGroup.PLAYER_STATE_MINI -> viewBinding.root.toDefaultPlayer()
+                MiniPlayerViewGroup.PLAYER_STATE_DEFAULT -> viewBinding.root.toMiniPlayer()
+            }
+        }
+
+    }
+
+    /** ミニプレイヤーのコールバックを受け取る */
+    private fun addCallBack() {
+        viewBinding.root.addOnStateChangeListener { state ->
+            val message = when (state) {
+                MiniPlayerViewGroup.PLAYER_STATE_DEFAULT -> "Default"
+                MiniPlayerViewGroup.PLAYER_STATE_DESTROY -> "Destroy"
+                MiniPlayerViewGroup.PLAYER_STATE_MINI -> "Mini"
+                else -> "Undefined"
+            }
+            Toast.makeText(context, "Player = $message", Toast.LENGTH_SHORT).show()
+        }
     }
 
     /** プレイヤーの用意 */

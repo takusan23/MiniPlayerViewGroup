@@ -25,6 +25,13 @@ class VideoListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 一覧表示
+        initRecyclerView()
+
+    }
+
+    /** 一覧表示 */
+    private fun initRecyclerView() {
         // RecyclerViewで表示する文字列配列を作成
         val titleList = arrayListOf(
             "Cupcake",
@@ -54,7 +61,6 @@ class VideoListFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = videoAdapter
         }
-
     }
 
 }
