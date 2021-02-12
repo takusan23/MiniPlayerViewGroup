@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import io.github.takusan23.miniplayerviewgroup.MainActivity
 import io.github.takusan23.miniplayerviewgroup.MiniPlayerViewGroup
@@ -31,12 +32,14 @@ class PlayerFragment : Fragment() {
         // コールバック追加
         addCallBack()
 
-        viewBinding.fragmentPlayerMiniplayerPlayerImageView.setOnClickListener {
-            when (viewBinding.root.currentState) {
-                MiniPlayerViewGroup.PLAYER_STATE_MINI -> viewBinding.root.toDefaultPlayer()
-                MiniPlayerViewGroup.PLAYER_STATE_DEFAULT -> viewBinding.root.toMiniPlayer()
+        // ドラッグ禁止
+        viewBinding.root.isDisableMiniPlayerMode = true
+
+        requireActivity().onBackPressedDispatcher.addCallback(this,object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewBinding.root.toMiniPlayer()
             }
-        }
+        })
 
     }
 

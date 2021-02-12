@@ -114,7 +114,7 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
     private var slidingSpeed = 0f
 
     /** 今の状態 */
-    var currentState = -1
+    var currentState = PLAYER_STATE_DEFAULT
 
 
     /**
@@ -451,8 +451,8 @@ class MiniPlayerViewGroup(context: Context, attributeSet: AttributeSet) : FrameL
 
     /** ミニプレイヤーへ遷移する */
     fun toMiniPlayer() {
-        // 同じなら無視
-        if (isMiniPlayer()) return
+        // 同じ + ミニプレイヤーモード禁止時は 無視
+        if (isMiniPlayer() || isDisableMiniPlayerMode) return
 
         isMoveAnimating = true
 

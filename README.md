@@ -221,6 +221,13 @@ class MainActivity : AppCompatActivity() {
 
 ## カスタマイズ
 
+### ミニプレイヤーいらない
+ミニプレイヤーモードを無効にできます。
+
+```kotlin
+viewBinding.activityMainMiniplayerViewgroup.isDisableMiniPlayerMode = true
+```
+
 ### ミニプレイヤー、通常画面へ切り替える関数
 
 ボタンを押したときにミニプレイヤーにしたいってこともできます。
